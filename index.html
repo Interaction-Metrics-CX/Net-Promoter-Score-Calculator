@@ -58,9 +58,23 @@
         }
         .chart-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 400px;
+            height: 400px;
             margin: auto;
+        }
+        .chart-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .nps-score-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: bold;
+            color: #00153E;
         }
     </style>
 </head>
@@ -87,10 +101,9 @@
             </div>
         </div>
         
-        <h2>Your NPS: <span id="npsScore">0</span></h2>
-        
         <div class="chart-container">
             <canvas id="npsChart"></canvas>
+            <div class="nps-score-display" id="npsScore">0</div>
         </div>
     </div>
 
@@ -136,27 +149,24 @@
             });
 
             function calculateNPS() {
-                let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
+                let totalResponses = 0, detractors = 0, promoters = 0;
                 document.querySelectorAll("input").forEach(input => {
                     const value = parseInt(input.value) || 0;
                     totalResponses += value;
                     if (categories.detractors.includes(parseInt(input.dataset.score))) detractors += value;
-                    if (categories.passives.includes(parseInt(input.dataset.score))) passives += value;
                     if (categories.promoters.includes(parseInt(input.dataset.score))) promoters += value;
                 });
 
                 if (totalResponses > 0) {
                     const detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
-                    const passivePercent = ((passives / totalResponses) * 100).toFixed(1);
                     const promoterPercent = ((promoters / totalResponses) * 100).toFixed(1);
                     const npsScore = (promoterPercent - detractorPercent).toFixed(0);
                     
                     document.getElementById("detractorPercent").innerText = `${detractorPercent}%`;
-                    document.getElementById("passivePercent").innerText = `${passivePercent}%`;
                     document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
                     document.getElementById("npsScore").innerText = npsScore;
                     
-                    npsChart.data.datasets[0].data = [detractorPercent, passivePercent, promoterPercent];
+                    npsChart.data.datasets[0].data = [detractorPercent, promoterPercent];
                     npsChart.update();
                 }
             }
