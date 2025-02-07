@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Net Promoter Score Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Nunito+Sans&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+        }
+        .categories {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .category {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+        .detractors { background-color: darkred; width: 60%; padding: 15px; }
+        .passives { background-color: darkgoldenrod; width: 20%; padding: 15px; }
+        .promoters { background-color: darkgreen; width: 20%; padding: 15px; }
+        .inputs {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        input {
+            width: 40px;
+            text-align: center;
+        }
+        .result-box {
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .chart-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Net Promoter Score Calculator</h1>
+        <p>To find your NPS, enter the number of responses for each score (0-10):</p>
+        
+        <div class="categories">
+            <div class="category detractors">
+                <p>Detractors (0-6)</p>
+                <div class="inputs" id="detractorInputs"></div>
+                <div class="result-box" id="detractorPercent">0%</div>
+            </div>
+            <div class="category passives">
+                <p>Passives (7-8)</p>
+                <div class="inputs" id="passiveInputs"></div>
+                <div class="result-box" id="passivePercent">0%</div>
+            </div>
+            <div class="category promoters">
+                <p>Promoters (9-10)</p>
+                <div class="inputs" id="promoterInputs"></div>
+                <div class="result-box" id="promoterPercent">0%</div>
+            </div>
+        </div>
+        
+        <button onclick="calculateNPS()">Calculate NPS</button>
+        
+        <h2>Your NPS: <span id="npsScore">0</span></h2>
+        
+        <div class="chart-container">
+            <canvas id="npsChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const categories = {
+                detractors: [0, 1, 2, 3, 4, 5, 6],
+                passives: [7, 8],
+                promoters: [9, 10]
+            };
+
+            function createInputs(containerId, values) {
+                const container = document.getElementById(containerId);
+                values.forEach(num => {
+                    const input = document.createElement("input");
+                    input.type = "number";
+                    input.min = "0";
+                    input.value = "0";
+                    input.dataset.score = num;
+                    input.oninput = calculateNPS;
+                    container.appendChild(input);
+                });
+            }
+
+            function calculateNPS() {
+                let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
+                document.querySelectorAll("input").forEach(input => {
+                    const value = parseInt(input.value) || 0;
+                    totalResponses += value;
+                    if (categories.detractors.includes(parseInt(input.dataset.score))) detractors += value;
+                    if (categories.passives.includes(parseInt(input.dataset.score))) passives += value;
+                    if (categories.promoters.includes(parseInt(input.dataset.score))) promoters += value;
+                });
+
+                if (totalResponses > 0) {
+                    const detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
+                    const passivePercent = ((passives / totalResponses) * 100).toFixed(1);
+                    const promoterPercent = ((promoters / totalResponses) * 100).toFixed(1);
+                    const npsScore = (promoterPercent - detractorPercent).toFixed(0);
+                    
+                    document.getElementById("detractorPercent").innerText = `${detractorPercent}%`;
+                    document.getElementById("passivePercent").innerText = `${passivePercent}%`;
+                    document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
+                    document.getElementById("npsScore").innerText = npsScore;
+                    
+                    updateChart([detractorPercent, passivePercent, promoterPercent]);
+                }
+            }
+
+            function updateChart(data) {
+                const ctx = document.getElementById("npsChart").getContext("2d");
+                if (window.npsChart) window.npsChart.destroy();
+                window.npsChart = new Chart(ctx, {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Detractors", "Passives", "Promoters"],
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ["darkred", "darkgoldenrod", "darkgreen"],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: "right" },
+                            tooltip: { enabled: true }
+                        },
+                    }
+                });
+            }
+
+            createInputs("detractorInputs", categories.detractors);
+            createInputs("passiveInputs", categories.passives);
+            createInputs("promoterInputs", categories.promoters);
+        });
+    </script>
+</body>
+</html>
