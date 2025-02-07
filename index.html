@@ -26,6 +26,7 @@
             justify-content: space-between;
             margin-bottom: 20px;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .category {
             display: flex;
@@ -35,22 +36,32 @@
             border-radius: 5px;
             color: white;
             font-weight: bold;
+            flex: 1;
         }
-        .detractors { background-color: darkred; width: 60%; padding: 15px; }
-        .passives { background-color: darkgoldenrod; width: 20%; padding: 15px; }
-        .promoters { background-color: darkgreen; width: 20%; padding: 15px; }
+        .detractors { background-color: darkred; }
+        .passives { background-color: darkgoldenrod; }
+        .promoters { background-color: darkgreen; }
         .inputs {
             display: flex;
             justify-content: center;
             gap: 5px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-container label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 2px;
         }
         input {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
             border: 2px solid #ccc;
             border-radius: 5px;
             -moz-appearance: textfield;
@@ -63,18 +74,17 @@
         input::placeholder {
             color: gray;
         }
-        .result-box {
-            padding: 10px;
-            color: white;
-            font-weight: bold;
-            border-radius: 5px;
-            margin-top: 5px;
+        .chart-section {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+            margin-top: 20px;
         }
         .chart-container {
             position: relative;
-            width: 400px;
-            height: 400px;
-            margin: auto;
+            width: 200px;
+            height: 200px;
         }
         .chart-container canvas {
             position: absolute;
@@ -86,9 +96,37 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 36px;
+            font-size: 24px;
             font-weight: bold;
             color: #00153E;
+            text-align: center;
+        }
+        .stats-box {
+            text-align: left;
+        }
+        .stats-box div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+        .green { background-color: darkgreen; }
+        .yellow { background-color: darkgoldenrod; }
+        .red { background-color: darkred; }
+        @media (max-width: 768px) {
+            .categories {
+                flex-direction: column;
+                align-items: center;
+            }
+            .chart-section {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
@@ -101,23 +139,27 @@
             <div class="category detractors">
                 <p>Detractors (0-6)</p>
                 <div class="inputs" id="detractorInputs"></div>
-                <div class="result-box" id="detractorPercent">0%</div>
             </div>
             <div class="category passives">
                 <p>Passives (7-8)</p>
                 <div class="inputs" id="passiveInputs"></div>
-                <div class="result-box" id="passivePercent">0%</div>
             </div>
             <div class="category promoters">
                 <p>Promoters (9-10)</p>
                 <div class="inputs" id="promoterInputs"></div>
-                <div class="result-box" id="promoterPercent">0%</div>
             </div>
         </div>
         
-        <div class="chart-container">
-            <canvas id="npsChart"></canvas>
-            <div class="nps-score-display" id="npsScore">0</div>
+        <div class="chart-section">
+            <div class="chart-container">
+                <canvas id="npsChart"></canvas>
+                <div class="nps-score-display" id="npsScore">0<br><span style="font-size: 16px;">NPS</span></div>
+            </div>
+            <div class="stats-box">
+                <div><span class="circle green"></span> Promoters: <span id="promoterPercent">0%</span></div>
+                <div><span class="circle yellow"></span> Passives: <span id="passivePercent">0%</span></div>
+                <div><span class="circle red"></span> Detractors: <span id="detractorPercent">0%</span></div>
+            </div>
         </div>
     </div>
 
@@ -132,10 +174,12 @@
             function createInputs(containerId, values) {
                 const container = document.getElementById(containerId);
                 values.forEach(num => {
+                    const inputContainer = document.createElement("div");
+                    inputContainer.className = "input-container";
+                    
                     const label = document.createElement("label");
                     label.textContent = num;
-                    label.style.fontSize = "12px";
-                    label.style.display = "block";
+                    inputContainer.appendChild(label);
                     
                     const input = document.createElement("input");
                     input.type = "number";
@@ -143,57 +187,10 @@
                     input.placeholder = "0";
                     input.dataset.score = num;
                     input.oninput = calculateNPS;
+                    inputContainer.appendChild(input);
                     
-                    container.appendChild(label);
-                    container.appendChild(input);
+                    container.appendChild(inputContainer);
                 });
-            }
-
-            const ctx = document.getElementById("npsChart").getContext("2d");
-            let npsChart = new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: ["Detractors", "Passives", "Promoters"],
-                    datasets: [{
-                        data: [0, 0, 0],
-                        backgroundColor: ["darkred", "darkgoldenrod", "darkgreen"],
-                        borderWidth: 2,
-                        cutout: '80%',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true }
-                    },
-                }
-            });
-
-            function calculateNPS() {
-                let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
-                document.querySelectorAll("input").forEach(input => {
-                    const value = parseInt(input.value) || 0;
-                    totalResponses += value;
-                    if (categories.detractors.includes(parseInt(input.dataset.score))) detractors += value;
-                    if (categories.passives.includes(parseInt(input.dataset.score))) passives += value;
-                    if (categories.promoters.includes(parseInt(input.dataset.score))) promoters += value;
-                });
-
-                if (totalResponses > 0) {
-                    const detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
-                    const passivePercent = ((passives / totalResponses) * 100).toFixed(1);
-                    const promoterPercent = ((promoters / totalResponses) * 100).toFixed(1);
-                    const npsScore = (promoterPercent - detractorPercent).toFixed(0);
-                    
-                    document.getElementById("detractorPercent").innerText = `${detractorPercent}%`;
-                    document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
-                    document.getElementById("npsScore").innerText = npsScore;
-                    
-                    npsChart.data.datasets[0].data = [detractorPercent, passivePercent, promoterPercent];
-                    npsChart.update();
-                }
             }
 
             createInputs("detractorInputs", categories.detractors);
