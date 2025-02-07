@@ -77,9 +77,8 @@
             height: 250px;
         }
         .chart-container canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 100% !important;
+            height: 100% !important;
         }
         .nps-score-display {
             position: absolute;
@@ -154,45 +153,55 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const categories = {
-                detractors: [0, 1, 2, 3, 4, 5, 6],
-                passives: [7, 8],
-                promoters: [9, 10]
-            };
-
-            function createInputs(containerId, values) {
-                const container = document.getElementById(containerId);
-                values.forEach(num => {
-                    const input = document.createElement("input");
-                    input.type = "number";
-                    input.min = "0";
-                    input.placeholder = "0";
-                    input.dataset.score = num;
-                    input.oninput = calculateNPS;
-                    container.appendChild(input);
-                });
-            }
+            const ctx = document.getElementById("npsChart").getContext("2d");
+            let npsChart = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Detractors", "Passives", "Promoters"],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ["darkred", "darkgoldenrod", "darkgreen"],
+                        borderWidth: 2,
+                        cutout: '80%',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                }
+            });
 
             function calculateNPS() {
                 let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
                 document.querySelectorAll("input").forEach(input => {
                     const value = parseInt(input.value) || 0;
                     totalResponses += value;
-                    if (categories.detractors.includes(parseInt(input.dataset.score))) detractors += value;
-                    if (categories.passives.includes(parseInt(input.dataset.score))) passives += value;
-                    if (categories.promoters.includes(parseInt(input.dataset.score))) promoters += value;
+                    if (value > 0) {
+                        if (input.dataset.score < 7) detractors += value;
+                        else if (input.dataset.score < 9) passives += value;
+                        else promoters += value;
+                    }
                 });
 
                 if (totalResponses > 0) {
-                    document.getElementById("detractorPercent").innerText = `${((detractors / totalResponses) * 100).toFixed(1)}%`;
-                    document.getElementById("passivePercent").innerText = `${((passives / totalResponses) * 100).toFixed(1)}%`;
-                    document.getElementById("promoterPercent").innerText = `${((promoters / totalResponses) * 100).toFixed(1)}%`;
+                    let detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
+                    let passivePercent = ((passives / totalResponses) * 100).toFixed(1);
+                    let promoterPercent = ((promoters / totalResponses) * 100).toFixed(1);
+                    let npsScore = (promoterPercent - detractorPercent).toFixed(0);
+
+                    document.getElementById("npsScore").innerHTML = `${npsScore}<br><span style="font-size: 14px;">NPS</span>`;
+                    document.getElementById("detractorPercent").innerText = `${detractorPercent}%`;
+                    document.getElementById("passivePercent").innerText = `${passivePercent}%`;
+                    document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
+                    npsChart.data.datasets[0].data = [detractorPercent, passivePercent, promoterPercent];
+                    npsChart.update();
                 }
             }
-
-            createInputs("detractorInputs", categories.detractors);
-            createInputs("passiveInputs", categories.passives);
-            createInputs("promoterInputs", categories.promoters);
+            document.querySelectorAll("input").forEach(input => input.addEventListener("input", calculateNPS));
         });
     </script>
 </body>
