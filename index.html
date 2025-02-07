@@ -44,10 +44,24 @@
             justify-content: center;
             gap: 5px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
         }
         input {
-            width: 40px;
+            width: 50px;
+            height: 50px;
             text-align: center;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            -moz-appearance: textfield;
+        }
+        input::-webkit-outer-spin-button, 
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input::placeholder {
+            color: gray;
         }
         .result-box {
             padding: 10px;
@@ -118,12 +132,19 @@
             function createInputs(containerId, values) {
                 const container = document.getElementById(containerId);
                 values.forEach(num => {
+                    const label = document.createElement("label");
+                    label.textContent = num;
+                    label.style.fontSize = "12px";
+                    label.style.display = "block";
+                    
                     const input = document.createElement("input");
                     input.type = "number";
                     input.min = "0";
-                    input.value = "0";
+                    input.placeholder = "0";
                     input.dataset.score = num;
                     input.oninput = calculateNPS;
+                    
+                    container.appendChild(label);
                     container.appendChild(input);
                 });
             }
@@ -136,29 +157,33 @@
                     datasets: [{
                         data: [0, 0, 0],
                         backgroundColor: ["darkred", "darkgoldenrod", "darkgreen"],
+                        borderWidth: 2,
+                        cutout: '80%',
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: "right" },
+                        legend: { display: false },
                         tooltip: { enabled: true }
                     },
                 }
             });
 
             function calculateNPS() {
-                let totalResponses = 0, detractors = 0, promoters = 0;
+                let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
                 document.querySelectorAll("input").forEach(input => {
                     const value = parseInt(input.value) || 0;
                     totalResponses += value;
                     if (categories.detractors.includes(parseInt(input.dataset.score))) detractors += value;
+                    if (categories.passives.includes(parseInt(input.dataset.score))) passives += value;
                     if (categories.promoters.includes(parseInt(input.dataset.score))) promoters += value;
                 });
 
                 if (totalResponses > 0) {
                     const detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
+                    const passivePercent = ((passives / totalResponses) * 100).toFixed(1);
                     const promoterPercent = ((promoters / totalResponses) * 100).toFixed(1);
                     const npsScore = (promoterPercent - detractorPercent).toFixed(0);
                     
@@ -166,7 +191,7 @@
                     document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
                     document.getElementById("npsScore").innerText = npsScore;
                     
-                    npsChart.data.datasets[0].data = [detractorPercent, promoterPercent];
+                    npsChart.data.datasets[0].data = [detractorPercent, passivePercent, promoterPercent];
                     npsChart.update();
                 }
             }
