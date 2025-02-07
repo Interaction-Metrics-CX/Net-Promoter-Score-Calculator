@@ -115,6 +115,26 @@
                 });
             }
 
+            const ctx = document.getElementById("npsChart").getContext("2d");
+            let npsChart = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Detractors", "Passives", "Promoters"],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ["darkred", "darkgoldenrod", "darkgreen"],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "right" },
+                        tooltip: { enabled: true }
+                    },
+                }
+            });
+
             function calculateNPS() {
                 let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
                 document.querySelectorAll("input").forEach(input => {
@@ -136,31 +156,9 @@
                     document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
                     document.getElementById("npsScore").innerText = npsScore;
                     
-                    updateChart([detractorPercent, passivePercent, promoterPercent]);
+                    npsChart.data.datasets[0].data = [detractorPercent, passivePercent, promoterPercent];
+                    npsChart.update();
                 }
-            }
-
-            function updateChart(data) {
-                const ctx = document.getElementById("npsChart").getContext("2d");
-                if (window.npsChart) window.npsChart.destroy();
-                window.npsChart = new Chart(ctx, {
-                    type: "doughnut",
-                    data: {
-                        labels: ["Detractors", "Passives", "Promoters"],
-                        datasets: [{
-                            data: data,
-                            backgroundColor: ["darkred", "darkgoldenrod", "darkgreen"],
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: "right" },
-                            tooltip: { enabled: true }
-                        },
-                    }
-                });
             }
 
             createInputs("detractorInputs", categories.detractors);
