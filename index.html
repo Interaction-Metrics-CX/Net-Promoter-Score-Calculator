@@ -45,7 +45,7 @@
             display: flex;
             justify-content: center;
             gap: 5px;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
         input {
             width: 40px;
@@ -153,6 +153,25 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const scores = Array.from({ length: 11 }, (_, i) => i);
+            const detractorContainer = document.getElementById("detractorInputs");
+            const passiveContainer = document.getElementById("passiveInputs");
+            const promoterContainer = document.getElementById("promoterInputs");
+
+            scores.forEach(score => {
+                const input = document.createElement("input");
+                input.type = "number";
+                input.min = "0";
+                input.value = "0";
+                input.dataset.score = score;
+
+                if (score < 7) detractorContainer.appendChild(input);
+                else if (score < 9) passiveContainer.appendChild(input);
+                else promoterContainer.appendChild(input);
+
+                input.addEventListener("input", calculateNPS);
+            });
+
             const ctx = document.getElementById("npsChart").getContext("2d");
             let npsChart = new Chart(ctx, {
                 type: "doughnut",
@@ -180,11 +199,9 @@
                 document.querySelectorAll("input").forEach(input => {
                     const value = parseInt(input.value) || 0;
                     totalResponses += value;
-                    if (value > 0) {
-                        if (input.dataset.score < 7) detractors += value;
-                        else if (input.dataset.score < 9) passives += value;
-                        else promoters += value;
-                    }
+                    if (input.dataset.score < 7) detractors += value;
+                    else if (input.dataset.score < 9) passives += value;
+                    else promoters += value;
                 });
 
                 if (totalResponses > 0) {
@@ -201,7 +218,6 @@
                     npsChart.update();
                 }
             }
-            document.querySelectorAll("input").forEach(input => input.addEventListener("input", calculateNPS));
         });
     </script>
 </body>
