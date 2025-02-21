@@ -21,31 +21,22 @@
             font-family: 'Poppins', sans-serif;
             font-size: 24px;
         }
-        .categories {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .category {
+        .inputs-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px;
-            border-radius: 5px;
-            color: white;
-            font-weight: bold;
-            flex: 1;
+            margin-bottom: 20px;
         }
-        .detractors { background-color: darkred; }
-        .passives { background-color: darkgoldenrod; }
-        .promoters { background-color: darkgreen; }
-        .inputs {
+        .labels, .inputs {
             display: flex;
             justify-content: center;
             gap: 5px;
             flex-wrap: wrap;
+        }
+        .labels label {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
         }
         input {
             width: 40px;
@@ -108,9 +99,8 @@
         .yellow { background-color: darkgoldenrod; }
         .red { background-color: darkred; }
         @media (max-width: 768px) {
-            .categories {
-                flex-direction: column;
-                align-items: center;
+            .labels, .inputs {
+                flex-wrap: wrap;
             }
             .results-container {
                 flex-direction: column;
@@ -122,22 +112,12 @@
     <div class="container">
         <h1>Net Promoter Score Calculator</h1>
         <p>To find your NPS, enter the number of responses for each score (0-10):</p>
-        
-        <div class="categories">
-            <div class="category detractors">
-                <p>Detractors (0-6)</p>
-                <div class="inputs" id="detractorInputs"></div>
-            </div>
-            <div class="category passives">
-                <p>Passives (7-8)</p>
-                <div class="inputs" id="passiveInputs"></div>
-            </div>
-            <div class="category promoters">
-                <p>Promoters (9-10)</p>
-                <div class="inputs" id="promoterInputs"></div>
-            </div>
+
+        <div class="inputs-container">
+            <div class="labels" id="labelsRow"></div>
+            <div class="inputs" id="inputsRow"></div>
         </div>
-        
+
         <div class="results-container">
             <div class="chart-container">
                 <canvas id="npsChart"></canvas>
@@ -154,20 +134,20 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const scores = Array.from({ length: 11 }, (_, i) => i);
-            const detractorContainer = document.getElementById("detractorInputs");
-            const passiveContainer = document.getElementById("passiveInputs");
-            const promoterContainer = document.getElementById("promoterInputs");
+            const labelsRow = document.getElementById("labelsRow");
+            const inputsRow = document.getElementById("inputsRow");
 
             scores.forEach(score => {
+                const label = document.createElement("label");
+                label.innerText = score;
+                labelsRow.appendChild(label);
+
                 const input = document.createElement("input");
                 input.type = "number";
                 input.min = "0";
                 input.value = "0";
                 input.dataset.score = score;
-
-                if (score < 7) detractorContainer.appendChild(input);
-                else if (score < 9) passiveContainer.appendChild(input);
-                else promoterContainer.appendChild(input);
+                inputsRow.appendChild(input);
 
                 input.addEventListener("input", calculateNPS);
             });
