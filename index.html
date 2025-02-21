@@ -21,39 +21,40 @@
             font-family: 'Poppins', sans-serif;
             font-size: 24px;
         }
-        .inputs-container {
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .category {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
-        }
-        .labels, .inputs {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-        .labels label {
-            width: 40px;
-            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
             font-weight: bold;
+            flex: 1;
+            min-width: 150px;
         }
+        .detractors { background-color: darkred; }
+        .passives { background-color: darkgoldenrod; }
+        .promoters { background-color: darkgreen; }
         input {
-            width: 40px;
+            width: 80px;
             height: 40px;
             text-align: center;
             font-size: 16px;
             border: 2px solid #ccc;
             border-radius: 5px;
-            -moz-appearance: textfield;
+            margin-top: 10px;
         }
         input::-webkit-outer-spin-button, 
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
-        }
-        input::placeholder {
-            color: gray;
         }
         .results-container {
             display: flex;
@@ -99,8 +100,9 @@
         .yellow { background-color: darkgoldenrod; }
         .red { background-color: darkred; }
         @media (max-width: 768px) {
-            .labels, .inputs {
-                flex-wrap: wrap;
+            .categories {
+                flex-direction: column;
+                align-items: center;
             }
             .results-container {
                 flex-direction: column;
@@ -111,13 +113,23 @@
 <body>
     <div class="container">
         <h1>Net Promoter Score Calculator</h1>
-        <p>To find your NPS, enter the number of responses for each score (0-10):</p>
-
-        <div class="inputs-container">
-            <div class="labels" id="labelsRow"></div>
-            <div class="inputs" id="inputsRow"></div>
+        <p>Enter the total count of responses for each category:</p>
+        
+        <div class="categories">
+            <div class="category detractors">
+                <p>Detractors (0-6)</p>
+                <input type="number" id="detractorInput" value="0" min="0">
+            </div>
+            <div class="category passives">
+                <p>Passives (7-8)</p>
+                <input type="number" id="passiveInput" value="0" min="0">
+            </div>
+            <div class="category promoters">
+                <p>Promoters (9-10)</p>
+                <input type="number" id="promoterInput" value="0" min="0">
+            </div>
         </div>
-
+        
         <div class="results-container">
             <div class="chart-container">
                 <canvas id="npsChart"></canvas>
@@ -133,25 +145,6 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const scores = Array.from({ length: 11 }, (_, i) => i);
-            const labelsRow = document.getElementById("labelsRow");
-            const inputsRow = document.getElementById("inputsRow");
-
-            scores.forEach(score => {
-                const label = document.createElement("label");
-                label.innerText = score;
-                labelsRow.appendChild(label);
-
-                const input = document.createElement("input");
-                input.type = "number";
-                input.min = "0";
-                input.value = "0";
-                input.dataset.score = score;
-                inputsRow.appendChild(input);
-
-                input.addEventListener("input", calculateNPS);
-            });
-
             const ctx = document.getElementById("npsChart").getContext("2d");
             let npsChart = new Chart(ctx, {
                 type: "doughnut",
@@ -175,14 +168,11 @@
             });
 
             function calculateNPS() {
-                let totalResponses = 0, detractors = 0, passives = 0, promoters = 0;
-                document.querySelectorAll("input").forEach(input => {
-                    const value = parseInt(input.value) || 0;
-                    totalResponses += value;
-                    if (input.dataset.score < 7) detractors += value;
-                    else if (input.dataset.score < 9) passives += value;
-                    else promoters += value;
-                });
+                let detractors = parseInt(document.getElementById("detractorInput").value) || 0;
+                let passives = parseInt(document.getElementById("passiveInput").value) || 0;
+                let promoters = parseInt(document.getElementById("promoterInput").value) || 0;
+                
+                let totalResponses = detractors + passives + promoters;
 
                 if (totalResponses > 0) {
                     let detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
@@ -194,10 +184,15 @@
                     document.getElementById("detractorPercent").innerText = `${detractorPercent}%`;
                     document.getElementById("passivePercent").innerText = `${passivePercent}%`;
                     document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
-                    npsChart.data.datasets[0].data = [detractorPercent, passivePercent, promoterPercent];
+
+                    npsChart.data.datasets[0].data = [detractors, passives, promoters];
                     npsChart.update();
                 }
             }
+
+            document.getElementById("detractorInput").addEventListener("input", calculateNPS);
+            document.getElementById("passiveInput").addEventListener("input", calculateNPS);
+            document.getElementById("promoterInput").addEventListener("input", calculateNPS);
         });
     </script>
 </body>
