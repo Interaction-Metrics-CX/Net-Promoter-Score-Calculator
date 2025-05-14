@@ -290,12 +290,12 @@
                 const comparisonChart = new Chart(document.getElementById("npsComparisonChart"), {
                     type: "bar",
                     data: {
-                        labels: ["Calculated NPS", "Industry NPS"],
+                        labels: ["Your NPS", `${industry.charAt(0).toUpperCase() + industry.slice(1)} NPS`],
                         datasets: [{
                             label: "NPS Comparison",
                             data: [npsScore, benchmark],
-                            backgroundColor: ["#00153E", "#4CAF50"], // Different colors for bars
-                            borderColor: ["#00153E", "#4CAF50"],
+                            backgroundColor: ["#00153E", "#00153E"], // Both bars in hex color #00153E
+                            borderColor: ["#00153E", "#00153E"],
                             borderWidth: 1
                         }]
                     },
