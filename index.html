@@ -15,7 +15,7 @@
             background-color: #f9f9f9;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
         }
         h1 {
@@ -132,6 +132,10 @@
         .industry-benchmark i {
             margin-right: 10px;
         }
+        .industry-benchmark small {
+            font-size: 12px;
+            color: #777;
+        }
         @media (max-width: 768px) {
             .categories {
                 flex-direction: column;
@@ -179,12 +183,26 @@
         <div class="industry-benchmark">
             <label for="industry"><i class="fas fa-industry"></i> Select your Industry:</label>
             <select id="industry">
+                <option value="grocery">Grocery</option>
                 <option value="retail">Retail</option>
-                <option value="healthcare">Healthcare</option>
-                <option value="tech">Technology</option>
-                <option value="manufacturing">Manufacturing</option>
+                <option value="investment">Investment Firm</option>
+                <option value="fastfood">Fast Food</option>
+                <option value="bank">Bank</option>
+                <option value="wireless">Wireless</option>
+                <option value="auto">Auto</option>
+                <option value="socialmedia">Social Media</option>
+                <option value="healthinsurance">Health Insurance</option>
+                <option value="insurance">Insurance</option>
+                <option value="hotel">Hotel</option>
+                <option value="airlines">Airlines</option>
+                <option value="software">Software Firm</option>
+                <option value="computers">Computers & Tablets</option>
+                <option value="electronics">Electronics</option>
+                <option value="tvinternet">TV/Internet</option>
+                <option value="utilities">Utilities</option>
             </select>
             <p id="benchmarkComparison"></p>
+            <small>Note: Industry averages based on Qualtrics' 2024 NPS report</small>
         </div>
     </div>
 
@@ -212,12 +230,25 @@
                 }
             });
 
-            // Industry benchmarks (Average NPS ranges)
+            // Industry benchmarks (2024 NPS averages)
             const benchmarks = {
-                retail: 30, // Example: Retail companies average NPS of 30
-                healthcare: 40, // Healthcare companies average NPS of 40
-                tech: 50, // Tech companies average NPS of 50
-                manufacturing: 20 // Manufacturing companies average NPS of 20
+                grocery: 34.3,
+                retail: 33.0,
+                investment: 30.5,
+                fastfood: 28.7,
+                bank: 28.0,
+                wireless: 27.4,
+                auto: 26.9,
+                socialmedia: 24.2,
+                healthinsurance: 22.3,
+                insurance: 22.0,
+                hotel: 21.9,
+                airlines: 21.9,
+                software: 21.1,
+                computers: 20.7,
+                electronics: 16.5,
+                tvinternet: 16.2,
+                utilities: 16.0
             };
 
             function updateBenchmark() {
@@ -225,7 +256,7 @@
                 const benchmark = benchmarks[industry] || 0;
                 const npsScore = parseInt(document.getElementById("npsScore").innerText.split('\n')[0]);
 
-                let comparisonText = `Industry Average NPS for ${industry}: ${benchmark}`;
+                let comparisonText = `Industry Average NPS for ${industry.charAt(0).toUpperCase() + industry.slice(1)}: ${benchmark}`;
                 if (npsScore > benchmark) {
                     comparisonText += ` (Your NPS is higher!)`;
                 } else if (npsScore < benchmark) {
