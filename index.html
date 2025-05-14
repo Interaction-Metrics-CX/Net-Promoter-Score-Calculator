@@ -136,6 +136,16 @@
             font-size: 12px;
             color: #777;
         }
+        .comparison-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .chart-container-bar {
+            position: relative;
+            width: 350px;
+            height: 250px;
+        }
         @media (max-width: 768px) {
             .categories {
                 flex-direction: column;
@@ -143,6 +153,10 @@
             }
             .results-container {
                 flex-direction: column;
+            }
+            .comparison-container {
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
@@ -176,6 +190,12 @@
                 <div><span class="circle green"></span> Promoters: <span id="promoterPercent">0%</span></div>
                 <div><span class="circle yellow"></span> Passives: <span id="passivePercent">0%</span></div>
                 <div><span class="circle red"></span> Detractors: <span id="detractorPercent">0%</span></div>
+            </div>
+        </div>
+
+        <div class="comparison-container">
+            <div class="chart-container-bar">
+                <canvas id="npsComparisonChart"></canvas>
             </div>
         </div>
 
@@ -266,41 +286,8 @@
                 }
 
                 document.getElementById("benchmarkComparison").innerText = comparisonText;
-            }
 
-            // NPS Calculation
-            function calculateNPS() {
-                let detractors = parseInt(document.getElementById("detractorInput").value) || 0;
-                let passives = parseInt(document.getElementById("passiveInput").value) || 0;
-                let promoters = parseInt(document.getElementById("promoterInput").value) || 0;
-                
-                let totalResponses = detractors + passives + promoters;
-
-                if (totalResponses > 0) {
-                    let detractorPercent = ((detractors / totalResponses) * 100).toFixed(1);
-                    let passivePercent = ((passives / totalResponses) * 100).toFixed(1);
-                    let promoterPercent = ((promoters / totalResponses) * 100).toFixed(1);
-                    let npsScore = (promoterPercent - detractorPercent).toFixed(0);
-
-                    document.getElementById("npsScore").innerHTML = `${npsScore}<br><span style="font-size: 14px;">NPS</span>`;
-                    document.getElementById("detractorPercent").innerText = `${detractorPercent}%`;
-                    document.getElementById("passivePercent").innerText = `${passivePercent}%`;
-                    document.getElementById("promoterPercent").innerText = `${promoterPercent}%`;
-
-                    npsChart.data.datasets[0].data = [detractors, passives, promoters];
-                    npsChart.update();
-
-                    updateBenchmark();
-                }
-            }
-
-            document.getElementById("detractorInput").addEventListener("input", calculateNPS);
-            document.getElementById("passiveInput").addEventListener("input", calculateNPS);
-            document.getElementById("promoterInput").addEventListener("input", calculateNPS);
-            document.getElementById("industry").addEventListener("change", updateBenchmark);
-
-            updateBenchmark();  // Initialize benchmark display
-        });
-    </script>
-</body>
-</html>
+                // Update Bar Chart
+                const comparisonChart = new Chart(document.getElementById("npsComparisonChart"), {
+                    type: "bar",
+                    data: {
